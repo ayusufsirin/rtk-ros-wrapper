@@ -7,7 +7,7 @@ RTK ROS wrapper and Python NTRIP client
 sudo rosdep init
 rosdep update
 rosdep install --from-paths src --ignore-src -r -y
-catkin_make
+catkin_make -DPYTHON_VERSION=3
 ```
 
 ```bash
