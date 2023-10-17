@@ -1,9 +1,18 @@
+#!/usr/bin/env python3
 import serial
 import struct
 import rospy
+import argparse
 from sensor_msgs.msg import Imu, NavSatFix
 from std_msgs.msg import Float32, UInt32
 from geometry_msgs.msg import Twist
+
+
+parser = argparse.ArgumentParser(description='Read data from a serial device and publish to ROS topics.')
+parser.add_argument('-s', '--serial-port', required=False, help='Serial port for the device (e.g. /dev/ttyUSB0)', default='/dev/ttyUSB0')
+parser.add_argument('-b', '--baud-rate', type=int, required=False, help='Baud rate for the serial port (e.g. 115200)', default=115200)
+
+args, _ = parser.parse_known_args()
 
 
 data_fields = {
@@ -141,5 +150,5 @@ def my_callback(parsed_data):
  #       print("Scaled-LLh")
         scaled_llh_pub.publish(scaled_llh_msg)
 
-ser = serial.Serial('/dev/ttyUSB0', baudrate=115200)
+ser = serial.Serial(args.serial_port, baudrate=args.baud_rate)
 process_serial_data(ser, my_callback)

@@ -1,14 +1,20 @@
-# https://github.com/semuconsulting/pynmeagps
-# https://pypi.org/project/pygnssutils/
-
+#!/usr/bin/env python3
 import serial
 import time
+import argparse
+import rospy
+
+# https://github.com/semuconsulting/pynmeagps
+# https://pypi.org/project/pygnssutils/
 from pygnssutils.gnssntripclient import GNSSNTRIPClient, GGALIVE
 from pynmeagps import NMEAReader
 
 
-SERIAL_DEVICE = '/dev/ttyUSB0'
-BAUD_RATE = 115200
+parser = argparse.ArgumentParser(description='NTRIP client for RTK serial devices.')
+parser.add_argument('-s', '--serial-port', required=False, help='Serial port for the device (e.g. /dev/ttyUSB0)', default='/dev/ttyUSB1')
+parser.add_argument('-b', '--baud-rate', type=int, required=False, help='Baud rate for the serial port (e.g. 115200)', default=115200)
+
+args, _ = parser.parse_known_args()
 
 
 class RTKModule:
@@ -17,7 +23,10 @@ class RTKModule:
         self.nmr = NMEAReader(serial)
 
     def get_coordinates(self):
-        (_, parsed_data) = self.nmr.read()
+        (raw_data, parsed_data) = self.nmr.read()
+        
+        rospy.logwarn(f'NMEA: {raw_data}')
+        
         if hasattr(parsed_data, 'msgID') and parsed_data.msgID == 'GGA':
             self.lat = parsed_data.lat
             self.lon = parsed_data.lon
@@ -28,7 +37,7 @@ class RTKModule:
 
 
 def main():
-    with serial.Serial(SERIAL_DEVICE, BAUD_RATE, timeout=3) as ser:
+    with serial.Serial(args.serial_port, baudrate=args.baud_rate, timeout=3) as ser:
         ntripc_settings = {
             "server": "212.156.70.42",
             "port": 2101,
@@ -46,7 +55,7 @@ def main():
         streaming = ntrpc.run(**ntripc_settings)
 
         while True:
-            print(f'Connected: {ntrpc.connected}, Streaming: {streaming}')
+            rospy.logwarn(f'Connected: {ntrpc.connected}, Streaming: {streaming}')
             time.sleep(2)
 
 

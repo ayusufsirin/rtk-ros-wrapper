@@ -1,0 +1,18 @@
+<launch>
+    <node 
+      pkg="rtk_wrapper" 
+      type="RTK_ROS.py" 
+      name="RTK_ROS" 
+      output="screen" 
+      args="--serial-port /dev/ttyUSB0 --baud-rate 115200"
+      >
+    </node>
+    <node 
+      pkg="rtk_wrapper" 
+      type="ntrip_client.py" 
+      name="ntrip_client" 
+      output="screen" 
+      args="--serial-port /dev/ttyUSB1 --baud-rate 115200"
+      >
+    </node>
+</launch>
